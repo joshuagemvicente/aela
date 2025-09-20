@@ -5,27 +5,25 @@ import { NextRequest } from "next/server"
 
 
 export const auth = betterAuth({
-    database: {
-        adapter: prismaAdapter(prisma, {
-            provider: "postgresql",
-        })
-    },
+    database: prismaAdapter(prisma, {
+        provider: "postgresql"
+    }),
     emailAndPassword: {
         enabled: true,
         autoSignIn: true,
     },
-    socialProviders: {
-        google: {
-            enabled: true,
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        },
-        apple: {
-            enabled: true,
-            clientId: process.env.APPLE_CLIENT_ID as string,
-            clientSecret: process.env.APPLE_CLIENT_SECRET,
-        }
-    }
+    // socialProviders: {
+    //     google: {
+    //         enabled: true,
+    //         clientId: process.env.GOOGLE_CLIENT_ID as string,
+    //         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    //     },
+    //     apple: {
+    //         enabled: true,
+    //         clientId: process.env.APPLE_CLIENT_ID as string,
+    //         clientSecret: process.env.APPLE_CLIENT_SECRET,
+    //     }
+    // }
 })
 
 
