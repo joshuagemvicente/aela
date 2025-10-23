@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { requireAuth } from "@/lib/actions/auth";
 import { getUserNotes } from "@/lib/actions/notes";
+import { getUserWorkspaces } from "@/lib/actions/workspaces";
 import { NotesProvider } from "@/contexts/notes-context";
+import { WorkspacesProvider } from "@/contexts/workspaces-context";
 import Sidebar from "@/components/dashboard/sidebar";
 
 export const metadata: Metadata = {
@@ -14,20 +16,21 @@ export default async function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Ensure user is authenticated
   await requireAuth();
   
-  // Fetch notes for the provider
   const notes = await getUserNotes();
+  const workspaces = await getUserWorkspaces();
 
   return (
     <NotesProvider initialNotes={notes}>
-      <div className="flex h-screen bg-background">
-        <Sidebar />
-        <main className="flex-1 overflow-hidden">
-          {children}
-        </main>
-      </div>
+      <WorkspacesProvider initialWorkspaces={workspaces}>
+        <div className="flex h-screen bg-background">
+          <Sidebar />
+          <main className="flex-1 overflow-hidden">
+            {children}
+          </main>
+        </div>
+      </WorkspacesProvider>
     </NotesProvider>
   );
 }

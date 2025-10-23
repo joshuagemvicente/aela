@@ -15,16 +15,19 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  notes         Note[]
+  id              String            @id @default(cuid())
+  name            String
+  email           String
+  emailVerified   Boolean           @default(false)
+  image           String?
+  firstLogin      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+  sessions        Session[]
+  accounts        Account[]
+  notes           Note[]
+  ownedWorkspaces Workspace[]       @relation("OwnedWorkspaces")
+  memberships     WorkspaceMember[]
 
   @@unique([email])
   @@map("user")
@@ -99,16 +102,49 @@ model Verification {
 }
 
 model Note {
-  id        String   @id @default(cuid())
-  title     String   @default("Untitled")
-  slug      String   @unique
-  content   Json?    // EditorJS content stored as JSON
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String     @id @default(cuid())
+  title       String     @default("Untitled")
+  slug        String     @unique
+  content     Json? // EditorJS content stored as JSON
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy   String? // User ID who created the note (for workspace notes)
+  updatedBy   String? // User ID who last updated the note (for workspace notes)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@index([userId])
+  @@index([workspaceId])
   @@index([slug])
   @@map("note")
+}
+
+model Workspace {
+  id               String            @id @default(cuid())
+  name             String
+  slug             String            @unique
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @default(now()) @updatedAt
+  ownerId          String
+  owner            User              @relation("OwnedWorkspaces", fields: [ownerId], references: [id], onDelete: Cascade)
+  workspaceMembers WorkspaceMember[]
+  notes            Note[]
+
+  @@map("workspace")
+}
+
+model WorkspaceMember {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String   @default("member") // e.g., "admin", "member"
+  joinedAt    DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_member")
 }

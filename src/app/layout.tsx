@@ -28,8 +28,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>{children}</body>
-      <Toaster position="top-right" richColors={true} closeButton={true} />
+      <body className={`${inter.className} antialiased`}>
+        {children}
+        <Toaster position="top-right" richColors={true} closeButton={true} />
+      </body>
     </html>
   );
 }

@@ -3,16 +3,17 @@ import { redirect } from "next/navigation"
 import Editor from "@/components/shared/editor"
 
 interface NotePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function NotePage({ params }: NotePageProps) {
   let note
   
   try {
-    note = await getNoteBySlug(params.id)
+    const { id } = await params;
+    note = await getNoteBySlug(id)
   } catch (error) {
     const notes = await getUserNotes()
     if (notes.length > 0) {

@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/prisma"
 import { waitlistSchema, type WaitlistInput } from "@/lib/validations/waitlist"
-import { emailJobs } from "@/lib/queue/processors"
 
 export type WaitlistResult = {
   success: boolean
@@ -66,23 +65,8 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       },
     })
 
-    // Get total count for email
-    const totalCount = await prisma.waitlistEntry.count({
-      where: { appSlug: DEFAULT_APP_SLUG },
-    })
-
-    // Queue welcome email
-    try {
-      await emailJobs.sendWelcomeEmail(
-        email.toLowerCase(),
-        currentPosition,
-        totalCount
-      )
-      console.log(`📧 Welcome email queued for ${email}`)
-    } catch (error) {
-      console.error(`❌ Failed to queue welcome email for ${email}:`, error)
-      // Don't fail the signup if email queuing fails
-    }
+    // Log successful waitlist signup
+    console.log(`✅ User ${email} joined waitlist at position ${currentPosition}`)
 
     return {
       success: true,
@@ -115,83 +99,6 @@ export async function getWaitlistCount(): Promise<number> {
   }
 }
 
-/**
- * Send update email to all waitlist members
- */
-export async function sendWaitlistUpdate(message: string): Promise<{
-  success: boolean
-  processed: number
-  failed: number
-  message?: string
-}> {
-  try {
-    const job = await emailJobs.sendBulkUpdate(message, DEFAULT_APP_SLUG)
-    
-    return {
-      success: true,
-      processed: 0, // Will be updated by the job processor
-      failed: 0,
-      message: "Bulk update email queued successfully",
-    }
-  } catch (error) {
-    console.error("Error queuing bulk update:", error)
-    return {
-      success: false,
-      processed: 0,
-      failed: 0,
-      message: "Failed to queue bulk update email",
-    }
-  }
-}
-
-/**
- * Send update email to specific waitlist member
- */
-export async function sendWaitlistMemberUpdate(
-  email: string,
-  message: string
-): Promise<WaitlistResult> {
-  try {
-    const entry = await prisma.waitlistEntry.findUnique({
-      where: {
-        email_appSlug: {
-          email: email.toLowerCase(),
-          appSlug: DEFAULT_APP_SLUG,
-        },
-      },
-    })
-
-    if (!entry) {
-      return {
-        success: false,
-        message: "Email not found on waitlist",
-      }
-    }
-
-    const totalCount = await prisma.waitlistEntry.count({
-      where: { appSlug: DEFAULT_APP_SLUG },
-    })
-
-    await emailJobs.sendUpdateEmail(
-      email.toLowerCase(),
-      entry.position,
-      totalCount,
-      message
-    )
-
-    return {
-      success: true,
-      position: entry.position,
-      message: "Update email sent successfully",
-    }
-  } catch (error) {
-    console.error("Error sending member update:", error)
-    return {
-      success: false,
-      message: "Failed to send update email",
-    }
-  }
-}
 
 /**
  * Get waitlist statistics
