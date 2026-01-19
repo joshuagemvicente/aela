@@ -5,8 +5,7 @@ import EditorJS from "@editorjs/editorjs";
 
 import { Input } from "@/components/ui/input";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
-import { updateNote, createBlankNote, type Note } from "@/lib/actions/notes";
+import { updateNote, type Note } from "@/lib/actions/notes";
 import useDebounce from "@/hooks/useDebounce";
 import { useNotes } from "@/contexts/notes-context";
 
