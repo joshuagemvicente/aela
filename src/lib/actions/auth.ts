@@ -115,6 +115,18 @@ export async function signInWithOAuth(provider: "google" | "github", callbackURL
     throw new Error("Invalid provider")
   }
 
+  // In production, if the provider is not configured, fail fast with a generic message
+  const googleConfigured = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+  const githubConfigured = Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET)
+
+  if (provider === "google" && !googleConfigured) {
+    throw new Error("Google sign-in is not available right now")
+  }
+
+  if (provider === "github" && !githubConfigured) {
+    throw new Error("GitHub sign-in is not available right now")
+  }
+
   // Redirect to OAuth provider
   const result = await auth.api.signInSocial({
     body: {

@@ -45,7 +45,9 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
         setHasUnsavedChanges(false);
       } catch (error) {
         setSaveStatus("error");
-        console.error("Auto-save failed:", error);
+        if (process.env.NODE_ENV !== "production") {
+          console.error("Auto-save failed:", error);
+        }
       }
     },
     [note, onNoteChange, isSaving],
@@ -65,7 +67,9 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
       const content = await editorRef.current.save();
       debouncedAutoSave(content, title);
     } catch (error) {
-      console.error("Failed to get editor content:", error);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Failed to get editor content:", error);
+      }
     }
   }, [debouncedAutoSave, title, note]);
 
@@ -83,7 +87,9 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
           debouncedAutoSave(content, newTitle);
         })
         .catch((error) => {
-          console.error("Failed to save title change:", error);
+          if (process.env.NODE_ENV !== "production") {
+            console.error("Failed to save title change:", error);
+          }
         });
     }
   };
@@ -98,7 +104,9 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
             autoSave(content, title);
           })
           .catch((error) => {
-            console.error("Periodic save failed:", error);
+            if (process.env.NODE_ENV !== "production") {
+              console.error("Periodic save failed:", error);
+            }
           });
       }
     }, 30000);
@@ -200,7 +208,12 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
         try {
           editorRef.current.destroy();
         } catch (error) {
-          console.error("Error destroying editor:", error);
+          if (process.env.NODE_ENV !== "production") {
+            console.error("Error destroying editor:", error);
+          }
+          if (process.env.NODE_ENV !== "production") {
+            console.error("Error destroying editor:", error);
+          }
         }
         editorRef.current = null;
       }

@@ -65,16 +65,15 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       },
     })
 
-    // Log successful waitlist signup
-    console.log(`✅ User ${email} joined waitlist at position ${currentPosition}`)
-
     return {
       success: true,
       position: currentPosition,
       message: "Successfully joined the waitlist!",
     }
   } catch (error) {
-    console.error("Waitlist error:", error)
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Waitlist error:", error)
+    }
     return {
       success: false,
       message: "Something went wrong. Please try again.",
@@ -94,7 +93,9 @@ export async function getWaitlistCount(): Promise<number> {
     })
     return count
   } catch (error) {
-    console.error("Error getting waitlist count:", error)
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Error getting waitlist count:", error)
+    }
     return 0
   }
 }
@@ -135,7 +136,9 @@ export async function getWaitlistStats(): Promise<{
 
     return { total, recent, positions }
   } catch (error) {
-    console.error("Error getting waitlist stats:", error)
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Error getting waitlist stats:", error)
+    }
     return { total: 0, recent: 0, positions: [] }
   }
 }

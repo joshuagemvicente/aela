@@ -11,7 +11,9 @@ export async function GET() {
       data: stats,
     });
   } catch (error) {
-    console.error('Error fetching waitlist stats:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Error fetching waitlist stats:', error);
+    }
     return NextResponse.json(
       { success: false, message: 'Failed to fetch waitlist statistics' },
       { status: 500 }
