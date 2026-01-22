@@ -7,18 +7,20 @@ export function SidebarContent() {
 
   return (
     <>
-      <h2 className="text-sm font-medium text-muted-foreground mb-3">
-        All Notes ({notes.length})
-      </h2>
+      <div className="mb-2 px-2">
+        <h2 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1 px-2">
+          Private
+        </h2>
+      </div>
 
       {notes.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground text-sm">
-            No notes yet. Create your first note to get started!
+        <div className="px-4 py-2">
+          <p className="text-muted-foreground text-xs">
+            No pages yet
           </p>
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-[1px]">
           {notes.map((note) => (
             <SidebarNoteItem key={note.id} note={note} />
           ))}

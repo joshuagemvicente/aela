@@ -1,8 +1,7 @@
 "use client"
 
 import { duplicateNote, Note } from "@/lib/actions/notes"
-import { Button } from "@/components/ui/button"
-import { Copy, MoreHorizontal, Trash2 } from "lucide-react"
+import { FileText, Copy, MoreHorizontal, Trash2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { useRouter, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -10,7 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { deleteNote } from "@/lib/actions/notes"
@@ -65,37 +64,35 @@ export function SidebarNoteItem({ note }: SidebarNoteItemProps) {
     <div
       onClick={handleClick}
       className={cn(
-        "group relative p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent",
-        isActive && "bg-accent"
+        "group relative px-2 py-1 rounded-sm cursor-pointer transition-colors hover:bg-sidebar-accent text-sidebar-foreground",
+        isActive && "bg-sidebar-accent font-medium"
       )}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm truncate">
-            {note.title}
-          </h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
-          </p>
+      <div className="flex items-center justify-between h-7">
+        <div className="flex-1 min-w-0 flex items-center gap-2">
+           <span className="text-muted-foreground opacity-70 group-hover:opacity-100 transition-opacity">
+             <FileText className="w-4 h-4" />
+           </span>
+          <span className="text-sm truncate leading-none pt-0.5">
+            {note.title || "Untitled"}
+          </span>
         </div>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+            <div
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-sm hover:bg-sidebar-accent/50 text-muted-foreground"
               onClick={(e) => e.stopPropagation()}
             >
               <MoreHorizontal className="w-4 h-4" />
-            </Button>
+            </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuContent align="start" className="w-48">
             <DropdownMenuItem onClick={handleDuplicate} className="cursor-pointer">
               <Copy className="w-4 h-4 mr-2" />
               Duplicate
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleDelete}
               className="text-destructive focus:text-destructive"

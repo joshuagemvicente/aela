@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Plus, Search, Settings } from "lucide-react"
+import { ChevronsUpDown, Plus, Settings } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -26,13 +26,10 @@ export function SidebarHeader({ onCollapse }: { onCollapse?: () => void }) {
   const [user, setUser] = useState<AuthResult["user"] | null>(null)
   const { addNote } = useNotes()
 
-  // Load user data on component mount
   useEffect(() => {
     getCurrentUserProfile()
       .then((result) => setUser(result.user))
-      .catch(() => {
-        // Handle error silently
-      })
+      .catch(() => {})
   }, [])
 
   const handleCreateNote = async () => {
@@ -59,34 +56,23 @@ export function SidebarHeader({ onCollapse }: { onCollapse?: () => void }) {
   }
 
   return (
-    <div className="px-3 py-2">
-      <div className="flex items-center justify-between">
-        <h1 className="text-base font-semibold">Aela</h1>
-        
-        {/* Profile Avatar */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
+    <div className="px-2 py-2 mb-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="flex items-center gap-2 p-1.5 rounded-sm hover:bg-sidebar-accent cursor-pointer transition-colors mb-2 group">
+             <Avatar className="h-5 w-5 rounded-sm">
                 <AvatarImage src={user?.image} alt={user?.name || "User"} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                <AvatarFallback className="rounded-sm text-[10px]">
                   {user?.name?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <div className="flex items-center justify-start gap-2 p-2">
-              <div className="flex flex-col space-y-1 leading-none">
-                {user?.name && (
-                  <p className="font-medium">{user.name}</p>
-                )}
-                {user?.email && (
-                  <p className="w-[200px] truncate text-sm text-muted-foreground">
-                    {user.email}
-                  </p>
-                )}
-              </div>
+             </Avatar>
+             <span className="text-sm font-medium truncate flex-1">{user?.name || "Aela Workspace"}</span>
+             <ChevronsUpDown className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" /> 
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64" align="start" forceMount>
+            <div className="px-2 py-1.5">
+               <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
@@ -95,32 +81,21 @@ export function SidebarHeader({ onCollapse }: { onCollapse?: () => void }) {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
-              <span>Sign out</span>
+              <span>Log out</span>
             </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      
-      <div className="space-y-2 mt-2">
-        <Button 
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <div className="space-y-[1px]">
+        <button
           onClick={handleCreateNote}
-          className="w-full justify-start h-8 text-sm"
-          size="sm"
+          className="flex items-center w-full gap-2 px-2 py-1 h-8 text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground rounded-sm transition-colors text-left"
         >
-          <Plus className="w-4 h-4 mr-2"></Plus>
-          New Note
-        </Button>
-        
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"></Search>
-          <Input
-            placeholder="Search notes..."
-            className="pl-8 h-8 text-sm"
-          />
-        </div>
+          <Plus className="w-4 h-4" />
+          <span>New page</span>
+        </button>
       </div>
 
-      {/* Settings Modal */}
       {user && (
         <SettingsModal
           isOpen={isSettingsOpen}
