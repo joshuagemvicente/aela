@@ -27,7 +27,6 @@ export function NotesProvider({
   initialNotes: Note[];
 }) {
   const [notes, setNotes] = useState<Note[]>(initialNotes);
-  // const [workspaces, setWorkspaces] = useState<string[]>([]);
 
   const updateNote = useCallback((updatedNote: Note) => {
     setNotes((prevNotes) =>
@@ -44,8 +43,6 @@ export function NotesProvider({
   const removeNote = useCallback((noteId: string) => {
     setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
   }, []);
-
-  const workspaces = useCallback(() => {}, []);
 
   return (
     <NotesContext.Provider

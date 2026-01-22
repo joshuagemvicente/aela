@@ -4,25 +4,17 @@ import { useEffect, useState, useCallback } from "react"
 import { SidebarHeader } from "./sidebar-header"
 import { SidebarContent } from "./sidebar-content"
 import { Button } from "@/components/ui/button"
-import { ChevronsLeft, ChevronsRight, FileText, Users } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ChevronsLeft, ChevronsRight, FileText } from "lucide-react"
 
 const SIDEBAR_STORAGE_KEY = "aela_sidebar_open"
-const SIDEBAR_TAB_KEY = "aela_sidebar_tab"
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true)
-  const [activeTab, setActiveTab] = useState("notes")
 
   useEffect(() => {
     const storedSidebarState = localStorage.getItem(SIDEBAR_STORAGE_KEY)
     if (storedSidebarState !== null) {
       setIsOpen(storedSidebarState === "true")
-    }
-
-    const storedTabState = localStorage.getItem(SIDEBAR_TAB_KEY)
-    if (storedTabState !== null) {
-      setActiveTab(storedTabState)
     }
   }, [])
 
@@ -34,13 +26,6 @@ export default function Sidebar() {
       } catch {}
       return nextState
     })
-  }, [])
-
-  const handleTabChange = useCallback((value: string) => {
-    setActiveTab(value)
-    try {
-      localStorage.setItem(SIDEBAR_TAB_KEY, value)
-    } catch {}
   }, [])
 
   return (
@@ -61,22 +46,8 @@ export default function Sidebar() {
             </div>
             <div className="flex-1 overflow-y-auto">
               <div className="px-3 py-3">
-                <SidebarContent activeTab={activeTab} />
+                <SidebarContent />
               </div>
-            </div>
-            <div className="border-t py-2 px-3">
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="w-full grid grid-cols-2">
-                  <TabsTrigger value="notes" className="flex items-center gap-2">
-                    <FileText className="h-4 w-4"></FileText>
-                    <span>Notes</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="workspaces" className="flex items-center gap-2">
-                    <Users className="h-4 w-4"></Users>
-                    <span>Workspaces</span>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
             </div>
           </div>
         ) : (

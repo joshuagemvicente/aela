@@ -62,16 +62,6 @@ export function SettingsModal({
       ],
     },
     {
-      id: "workspace",
-      title: "Workspace",
-      icon: Users,
-      items: [
-        { id: "general", title: "General", icon: Settings },
-        { id: "people", title: "People", icon: Users },
-        { id: "teamspaces", title: "Teamspaces", icon: Users },
-      ],
-    },
-    {
       id: "features",
       title: "Features",
       icon: Sparkles,
@@ -143,82 +133,6 @@ export function SettingsModal({
           </div>
         );
 
-      case "general":
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">Language</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Change the language used in the user interface.
-                  </p>
-                </div>
-                <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en-US">English (US)</SelectItem>
-                    <SelectItem value="es-ES">Spanish</SelectItem>
-                    <SelectItem value="fr-FR">French</SelectItem>
-                    <SelectItem value="de-DE">German</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">
-                    Start week on Monday
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    This will change how all calendars in your app look.
-                  </p>
-                </div>
-                <Switch
-                  checked={startWeekOnMonday}
-                  onCheckedChange={setStartWeekOnMonday}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">
-                    Set timezone automatically using your location
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Reminders, notifications and emails are delivered based on
-                    your time zone.
-                  </p>
-                </div>
-                <Switch
-                  checked={autoTimezone}
-                  onCheckedChange={setAutoTimezone}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">Timezone</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Current timezone setting.
-                  </p>
-                </div>
-                <Select value={timezone} onValueChange={setTimezone}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GMT+8:00">(GMT+8:00) Manila</SelectItem>
-                    <SelectItem value="GMT-8:00">
-                      (GMT-8:00) Los Angeles
-                    </SelectItem>
-                    <SelectItem value="GMT+0:00">(GMT+0:00) London</SelectItem>
-                    <SelectItem value="GMT+9:00">(GMT+9:00) Tokyo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        );
 
       case "privacy":
         return (
