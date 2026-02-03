@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
 import EditorJS from "@editorjs/editorjs";
-
+import { AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { updateNote, type Note } from "@/lib/actions/notes";
-import useDebounce from "@/hooks/useDebounce";
 import { useNotes } from "@/contexts/notes-context";
+import useDebounce from "@/hooks/useDebounce";
+import { type Note, updateNote } from "@/lib/actions/notes";
 
 type SaveStatus = "saved" | "saving" | "error" | "pending";
 
@@ -20,28 +19,41 @@ interface EditorProps {
 
 export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
   const editorRef = useRef<EditorJS | null>(null);
-  const [title, setTitle] = useState(note?.title || "Untitled");
+  const [title, setTitle] = useState(note?.title ? note?.title : "");
+  const titleRef = useRef(title);
   const [isSaving, setIsSaving] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { updateNote: updateNoteInContext } = useNotes();
 
-  // Auto-save function
+  useEffect(() => {
+    titleRef.current = title;
+  }, [title]);
+
   const autoSave = useCallback(
     async (content: any, noteTitle: string) => {
       if (!note || isSaving) return;
 
+      setIsSaving(true);
       setSaveStatus("saving");
+      const titleAtSaveStart = titleRef.current;
+      const titleToSave = noteTitle || titleAtSaveStart;
+      
       try {
         const formData = new FormData();
         formData.append("id", note.id);
-        formData.append("title", noteTitle);
+        formData.append("title", titleToSave);
         formData.append("content", JSON.stringify(content));
 
         const updatedNote = await updateNote(formData);
         onNoteChange?.(updatedNote);
-        updateNoteInContext(updatedNote); // Update sidebar in real-time
+        updateNoteInContext(updatedNote);
+        
+        if (titleRef.current === titleAtSaveStart && updatedNote.title) {
+          setTitle(updatedNote.title);
+          titleRef.current = updatedNote.title;
+        }
+        
         setSaveStatus("saved");
         setHasUnsavedChanges(false);
       } catch (error) {
@@ -49,9 +61,11 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
         if (process.env.NODE_ENV !== "production") {
           console.error("Auto-save failed:", error);
         }
+      } finally {
+        setIsSaving(false);
       }
     },
-    [note, onNoteChange, isSaving],
+    [note, onNoteChange, updateNoteInContext],
   );
 
   // Debounced auto-save - 1 seconds after user stops typing
@@ -66,13 +80,14 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
 
     try {
       const content = await editorRef.current.save();
-      debouncedAutoSave(content, title);
+      const currentTitle = titleRef.current;
+      debouncedAutoSave(content, currentTitle);
     } catch (error) {
       if (process.env.NODE_ENV !== "production") {
         console.error("Failed to get editor content:", error);
       }
     }
-  }, [debouncedAutoSave, title, note]);
+  }, [debouncedAutoSave, note]);
 
   // Handle title changes with auto-save
   const handleTitleChange = (newTitle: string) => {
@@ -102,7 +117,8 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
         editorRef.current
           .save()
           .then((content) => {
-            autoSave(content, title);
+            const currentTitle = titleRef.current;
+            autoSave(content, currentTitle);
           })
           .catch((error) => {
             if (process.env.NODE_ENV !== "production") {
@@ -113,7 +129,7 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [hasUnsavedChanges, autoSave, title, note, isSaving]);
+  }, [hasUnsavedChanges, autoSave, note, isSaving]);
 
   // Save on page unload
   useEffect(() => {
@@ -128,6 +144,13 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    if (note?.title) {
+      setTitle(note.title);
+      titleRef.current = note.title;
+    }
+  }, [note?.id]);
 
   useEffect(() => {
     let isMounted = true;
@@ -219,7 +242,8 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
         editorRef.current = null;
       }
     };
-  }, [note?.id]); // Removed handleContentChange from dependencies
+    // biome-ignore lint/correctness/useHookAtTopLevel: Editor should only re-initialize when note ID changes (switching notes), not on every content or callback change
+  }, [note?.id]);
 
   // const handleSave = async () => {
   //   if (!editorRef.current || !note) return
@@ -306,7 +330,7 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
     <div className="flex flex-col h-full bg-background relative group/editor">
       {/* Top Bar - Minimal */}
       <div className="absolute top-2 right-4 z-10 opacity-0 group-hover/editor:opacity-100 transition-opacity duration-200">
-         <SaveStatusIndicator />
+        <SaveStatusIndicator />
       </div>
 
       {/* Editor Content */}
@@ -314,12 +338,12 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
         <div className="max-w-3xl mx-auto pt-20 pb-24 px-12 sm:px-16">
           {/* Title Input */}
           <div className="mb-4 group/title">
-             <input
-                value={title}
-                onChange={(e) => handleTitleChange(e.target.value)}
-                className="w-full text-4xl font-bold border-none bg-transparent focus:outline-none placeholder:text-muted-foreground/40 text-foreground"
-                placeholder="Untitled"
-             />
+            <input
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              className="w-full text-4xl font-bold border-none bg-transparent focus:outline-none placeholder:text-muted-foreground/40 text-foreground"
+              placeholder="Untitled"
+            />
           </div>
 
           <Separator className="my-8 opacity-0 group-hover/editor:opacity-100 transition-opacity duration-200" />
@@ -339,4 +363,3 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
     </div>
   );
 }
-

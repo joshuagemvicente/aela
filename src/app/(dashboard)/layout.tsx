@@ -15,18 +15,16 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }>) {
   await requireAuth();
-  
+
   const notes = await getUserNotes();
 
   return (
     <NotesProvider initialNotes={notes}>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <main className="flex-1 overflow-hidden">
-          {children}
-        </main>
+        <main className="flex-1 overflow-hidden">{children}</main>
       </div>
     </NotesProvider>
   );
 }
-  
+
