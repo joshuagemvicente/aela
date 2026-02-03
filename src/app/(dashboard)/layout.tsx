@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/actions/auth";
 import { getUserNotes } from "@/lib/actions/notes";
 import { NotesProvider } from "@/contexts/notes-context";
 import Sidebar from "@/components/dashboard/sidebar";
+import { HelpSettings } from "@/components/dashboard/help-settings";
 
 export const metadata: Metadata = {
   title: "Dashboard | Aela",
@@ -23,8 +24,8 @@ export default async function DashboardLayout({
       <div className="flex h-screen bg-background">
         <Sidebar />
         <main className="flex-1 overflow-hidden">{children}</main>
+        <HelpSettings />
       </div>
     </NotesProvider>
   );
 }
-

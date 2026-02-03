@@ -3,7 +3,6 @@
 import EditorJS from "@editorjs/editorjs";
 import { AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useNotes } from "@/contexts/notes-context";
 import useDebounce from "@/hooks/useDebounce";

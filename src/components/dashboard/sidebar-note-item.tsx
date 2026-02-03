@@ -2,7 +2,6 @@
 
 import { duplicateNote, Note } from "@/lib/actions/notes"
 import { FileText, Copy, MoreHorizontal, Trash2 } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
 import { useRouter, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {

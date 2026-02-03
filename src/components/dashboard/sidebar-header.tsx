@@ -15,7 +15,7 @@ import { createBlankNote } from "@/lib/actions/notes"
 import { signOut } from "@/lib/actions/auth"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { SettingsModal } from "./settings-modal"
 import { getCurrentUserProfile, type AuthResult } from "@/lib/actions/auth"
 import { useNotes } from "@/contexts/notes-context"
@@ -32,7 +32,7 @@ export function SidebarHeader({ onCollapse }: { onCollapse?: () => void }) {
       .catch(() => {})
   }, [])
 
-  const handleCreateNote = async () => {
+  const handleCreateNote = useCallback(async () => {
     try {
       const newNote = await createBlankNote()
       addNote(newNote)
@@ -42,7 +42,13 @@ export function SidebarHeader({ onCollapse }: { onCollapse?: () => void }) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create note"
       toast.error(errorMessage)
     }
-  }
+  }, [addNote, router])
+
+  useEffect(() => {
+    const onShortcut = () => handleCreateNote()
+    window.addEventListener("aela:create-note", onShortcut)
+    return () => window.removeEventListener("aela:create-note", onShortcut)
+  }, [handleCreateNote])
 
   const handleSignOut = async () => {
     try {

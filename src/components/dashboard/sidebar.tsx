@@ -18,11 +18,26 @@ export default function Sidebar() {
     }
   }, []);
 
+  useEffect(() => {
+    const handleToggleSidebar = () => {
+      setIsOpen((previousState) => {
+        const nextState = !previousState;
+        try {
+          localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextState));
+        } catch {}
+        return nextState;
+      });
+    };
+    window.addEventListener("aela:toggle-sidebar", handleToggleSidebar);
+    return () => window.removeEventListener("aela:toggle-sidebar", handleToggleSidebar);
+  }, []);
+
   const toggleSidebar = useCallback(() => {
     setIsOpen((previousState) => {
       const nextState = !previousState;
       try {
         localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextState));
+        
       } catch {}
       return nextState;
     });
