@@ -7,6 +7,7 @@ import Image from "next/image";
 import Testimonial04 from "@/components/landing/testimonials";
 
 function LandingSection() {
+  const isFree = process.env.NEXT_PUBLIC_FREE_PLAN;
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b">
@@ -221,62 +222,63 @@ function LandingSection() {
           </div>
         </section>
 
-        <section id="pricing" className="py-16 sm:py-20 border-t">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="rounded-lg border p-6 bg-card">
-                <h3 className="font-semibold">Free</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Basic notes and sync
-                </p>
-                <p className="mt-6 text-3xl font-bold">$0</p>
-                <Link
-                  href="/register"
-                  className="mt-6 inline-flex items-center rounded-md px-3 py-2 border hover:bg-accent transition"
-                >
-                  Start free
-                </Link>
-              </div>
-              <div className="rounded-lg border p-6 bg-card ring-1 ring-primary/20">
-                <h3 className="font-semibold">Pro</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Unlimited notes, priority sync
-                </p>
-                <p className="mt-6 text-3xl font-bold">
-                  $8
-                  <span className="text-base font-medium text-muted-foreground">
-                    /mo
-                  </span>
-                </p>
-                <Link
-                  href="/register"
-                  className="mt-6 inline-flex items-center rounded-md px-3 py-2 bg-primary text-primary-foreground hover:opacity-90 transition"
-                >
-                  Go Pro
-                </Link>
-              </div>
-              <div className="rounded-lg border p-6 bg-card">
-                <h3 className="font-semibold">Team</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Collaboration and roles
-                </p>
-                <p className="mt-6 text-3xl font-bold">
-                  $24
-                  <span className="text-base font-medium text-muted-foreground">
-                    /mo
-                  </span>
-                </p>
-                <Link
-                  href="/register"
-                  className="mt-6 inline-flex items-center rounded-md px-3 py-2 border hover:bg-accent transition"
-                >
-                  Contact sales
-                </Link>
+        {!isFree ? (
+          <section id="pricing" className="py-16 sm:py-20 border-t">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6">
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="rounded-lg border p-6 bg-card">
+                  <h3 className="font-semibold">Free</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Basic notes and sync
+                  </p>
+                  <p className="mt-6 text-3xl font-bold">$0</p>
+                  <Link
+                    href="/register"
+                    className="mt-6 inline-flex items-center rounded-md px-3 py-2 border hover:bg-accent transition"
+                  >
+                    Start free
+                  </Link>
+                </div>
+                <div className="rounded-lg border p-6 bg-card ring-1 ring-primary/20">
+                  <h3 className="font-semibold">Pro</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Unlimited notes, priority sync
+                  </p>
+                  <p className="mt-6 text-3xl font-bold">
+                    $8
+                    <span className="text-base font-medium text-muted-foreground">
+                      /mo
+                    </span>
+                  </p>
+                  <Link
+                    href="/register"
+                    className="mt-6 inline-flex items-center rounded-md px-3 py-2 bg-primary text-primary-foreground hover:opacity-90 transition"
+                  >
+                    Go Pro
+                  </Link>
+                </div>
+                <div className="rounded-lg border p-6 bg-card">
+                  <h3 className="font-semibold">Team</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Collaboration and roles
+                  </p>
+                  <p className="mt-6 text-3xl font-bold">
+                    $24
+                    <span className="text-base font-medium text-muted-foreground">
+                      /mo
+                    </span>
+                  </p>
+                  <Link
+                    href="/register"
+                    className="mt-6 inline-flex items-center rounded-md px-3 py-2 border hover:bg-accent transition"
+                  >
+                    Contact sales
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-
+          </section>
+        ) : null}
         <section className="py-16 sm:py-20">
           <div className="mx-auto max-w-4xl text-center px-4 sm:px-6">
             <h2 className="text-2xl font-semibold">
@@ -293,7 +295,7 @@ function LandingSection() {
               >
                 Create account
               </Link>
-              <NewsletterCTA></NewsletterCTA>
+              <NewsletterCTA />
             </div>
           </div>
         </section>
