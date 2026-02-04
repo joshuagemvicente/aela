@@ -5,9 +5,12 @@ import Carousel from "@/components/landing/Carousel";
 import NewsletterCTA from "@/components/landing/NewsletterCTA";
 import Image from "next/image";
 import Testimonial04 from "@/components/landing/testimonials";
+import { auth, getUser } from "@/lib/auth";
+import { headers } from "next/headers";
 
-function LandingSection() {
+async function LandingSection() {
   const isFree = process.env.NEXT_PUBLIC_FREE_PLAN;
+  const session = await getUser({ headers: await headers() });
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b">
@@ -38,20 +41,31 @@ function LandingSection() {
                 Pricing
               </a>
             </nav>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/login"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/register"
-                className="inline-flex items-center text-sm rounded-md px-3 py-1.5 bg-primary text-primary-foreground hover:opacity-90 transition"
-              >
-                Get started
-              </Link>
-            </div>
+            {!session ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/login"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center text-sm rounded-md px-3 py-1.5 bg-primary text-primary-foreground hover:opacity-90 transition"
+                >
+                  Get started
+                </Link>
+              </div>
+            ) : (
+              <div>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center text-sm rounded-md px-3 py-1.5 bg-primary text-primary-foreground hover:opacity-90 transition"
+                >
+                  Dashboard
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>
