@@ -1,244 +1,295 @@
-"use client"
+"use client";
 
-import { useState, useTransition } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Eye, EyeOff, Github, Mail } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
-import { useTogglePassword } from "@/hooks/use-toggle-password"
-import { useRouter } from "next/navigation"
-import { signInWithEmail, signInWithOAuth } from "@/lib/actions/auth"
-import { loginSchema, type LoginInput } from "@/lib/validations/auth"
-import { toast } from "sonner"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AnimatePresence, motion } from "framer-motion";
+import { Edit2, Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useTogglePassword } from "@/hooks/use-toggle-password";
+import { signInWithEmail, signInWithOAuth } from "@/lib/actions/auth";
+import { cn } from "@/lib/utils";
+import { type LoginInput, loginSchema } from "@/lib/validations/auth";
 
-type LoginFormData = LoginInput
+type LoginFormData = LoginInput;
 
 interface LoginFormProps {
-  onSuccess?: () => void
-  className?: string
+  onSuccess?: () => void;
+  className?: string;
 }
 
 export default function LoginForm({ onSuccess, className }: LoginFormProps) {
-  const router = useRouter()
-  const { isPasswordVisible, togglePassword, getPasswordInputType } = useTogglePassword()
-  const [isPending, startTransition] = useTransition()
-  const [isOAuthLoading, setIsOAuthLoading] = useState<string | null>(null)
-  
+  const router = useRouter();
+  const { isPasswordVisible, togglePassword, getPasswordInputType } =
+    useTogglePassword();
+  const [isPending, startTransition] = useTransition();
+  const [isOAuthLoading, setIsOAuthLoading] = useState<boolean>(false);
+  const [step, setStep] = useState<"email" | "password">("email");
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setError,
+    trigger,
+    setFocus,
+    setValue,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-  })
+    mode: "onChange",
+  });
+
+  const handleContinue = async () => {
+    const isEmailValid = await trigger("email");
+    if (isEmailValid) {
+      setStep("password");
+      setTimeout(() => setFocus("password"), 100);
+    }
+  };
 
   const handleEmailPasswordLogin = async (data: LoginFormData) => {
     startTransition(async () => {
       try {
-        const formData = new FormData()
-        formData.append("email", data.email)
-        formData.append("password", data.password)
-        
-        await signInWithEmail(formData)
-        
-        toast.success("Successfully signed in!")
-        onSuccess?.()
-        router.push("/dashboard")
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred"
-        toast.error(errorMessage)
-      }
-    })
-  }
+        const formData = new FormData();
+        formData.append("email", data.email);
+        formData.append("password", data.password);
 
-  const handleOAuthLogin = async (provider: "google" | "github") => {
-    setIsOAuthLoading(provider)
+        await signInWithEmail(formData);
+
+        toast.success("Successfully signed in!");
+        onSuccess?.();
+        router.push("/dashboard");
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred";
+        toast.error(errorMessage);
+      }
+    });
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsOAuthLoading(true);
     try {
-      await signInWithOAuth(provider, "/dashboard")
+      await signInWithOAuth("google", "/dashboard");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : `Failed to sign in with ${provider}`
-      toast.error(errorMessage)
-      setIsOAuthLoading(null)
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to sign in with Google";
+      toast.error(errorMessage);
+      setIsOAuthLoading(false);
     }
-  }
+  };
 
   return (
-    <div className={cn("min-h-screen flex", className)}>
-      <div className="flex-1 flex items-center justify-center p-8 bg-background">
-        <div className="w-full max-w-md space-y-6">
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-            <p className="text-muted-foreground">
-              Sign in to your account to continue
+    <div
+      className={cn(
+        "min-h-screen flex flex-col items-center justify-center bg-background p-4",
+        className,
+      )}
+    >
+      <div className="w-full max-w-[400px] space-y-8">
+        <div className="flex flex-col items-center space-y-4">
+          <Link href="/" className="flex items-center gap-2 mb-4">
+            <Image
+              src="/aela.png"
+              alt="Aela"
+              width={48}
+              height={48}
+              className="rounded-xl"
+            />
+          </Link>
+          <div className="text-center space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Log in to Aela
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Welcome back! Please enter your details.
             </p>
           </div>
-
-          <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">Sign in</CardTitle>
-              <CardDescription className="text-center">
-                Enter your credentials to access your account
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => handleOAuthLogin("google")}
-                  disabled={isOAuthLoading !== null}
-                  className="w-full"
-                >
-                  {isOAuthLoading === "google" ? (
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      />
-                    </svg>
-                  )}
-                  Google
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleOAuthLogin("github")}
-                  disabled={isOAuthLoading !== null}
-                  className="w-full"
-                >
-                  {isOAuthLoading === "github" ? (
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Github className="w-4 h-4" />
-                  )}
-                  GitHub
-                </Button>
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              {/* Email/Password Form */}
-              <form onSubmit={handleSubmit(handleEmailPasswordLogin)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      className="pl-10"
-                      {...register("email")}
-                    />
-                  </div>
-                  {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={getPasswordInputType()}
-                      placeholder="Enter your password"
-                      className="pr-10"
-                      {...register("password")}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={togglePassword}
-                    >
-                      {isPasswordVisible ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  {errors.password && (
-                    <p className="text-sm text-destructive">{errors.password.message}</p>
-                  )}
-                </div>
-
-
-                <Button type="submit" className="w-full" disabled={isPending}>
-                  {isPending ? (
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    "Sign in"
-                  )}
-                </Button>
-              </form>
-
-              <div className="text-center text-sm">
-                <span className="text-muted-foreground">Don't have an account? </span>
-                <Button onClick={() => router.push("/register")} variant="link" className="p-0 h-auto font-normal">
-                  Sign up
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
-      </div>
 
-      {/* Right side - Generated Image */}
-      <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center bg-gradient-to-br from-primary/20 via-primary/10 to-secondary/20">
-        <div className="relative w-full h-full max-w-lg">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-3xl blur-3xl" />
-          <div className="relative z-10 flex items-center justify-center h-full">
-            <div className="text-center space-y-6 p-8">
-              <div className="w-32 h-32 mx-auto bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-2xl">
-                <Mail className="w-16 h-16 text-white" />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-foreground">
-                  Secure Authentication
-                </h2>
-                <p className="text-muted-foreground max-w-sm">
-                  Experience seamless and secure login with our modern authentication system
-                </p>
-              </div>
-              <div className="flex justify-center space-x-4">
-                <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
-                <div className="w-3 h-3 bg-secondary rounded-full animate-pulse delay-100" />
-                <div className="w-3 h-3 bg-primary rounded-full animate-pulse delay-200" />
-              </div>
+        <div className="space-y-4">
+          <Button
+            variant="outline"
+            onClick={handleGoogleLogin}
+            disabled={isOAuthLoading || isPending}
+            className="w-full h-10 font-normal border-input hover:bg-accent hover:text-accent-foreground relative"
+          >
+            {isOAuthLoading ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+            ) : (
+              <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+                <title>Google</title>
+                <path
+                  fill="currentColor"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+            )}
+            Continue with Google
+          </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or
+              </span>
             </div>
           </div>
+
+          <form
+            onSubmit={handleSubmit(handleEmailPasswordLogin)}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor="email"
+                  className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                >
+                  Email
+                </Label>
+                {step === "password" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep("email");
+                      setValue("password", "");
+                    }}
+                    className="text-xs text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                    Edit
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  className={cn(
+                    "h-10",
+                    step === "password" && "bg-muted text-muted-foreground",
+                  )}
+                  {...register("email")}
+                  readOnly={step === "password"}
+                  disabled={isPending || isOAuthLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && step === "email") {
+                      e.preventDefault();
+                      handleContinue();
+                    }
+                  }}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-xs text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <AnimatePresence>
+              {step === "password" && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden space-y-2"
+                >
+                  <div className="space-y-2 pt-1">
+                    <Label
+                      htmlFor="password"
+                      className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                    >
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={getPasswordInputType()}
+                        placeholder="Enter your password"
+                        className="h-10 pr-10"
+                        {...register("password")}
+                        disabled={isPending || isOAuthLoading}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-muted-foreground"
+                        onClick={togglePassword}
+                        disabled={isPending || isOAuthLoading}
+                      >
+                        {isPasswordVisible ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    {errors.password && (
+                      <p className="text-xs text-destructive">
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <Button
+              type={step === "email" ? "button" : "submit"}
+              className="w-full h-10 font-medium"
+              disabled={isPending || isOAuthLoading}
+              onClick={step === "email" ? handleContinue : undefined}
+            >
+              {isPending ? (
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : step === "email" ? (
+                "Continue"
+              ) : (
+                "Log in"
+              )}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/register"
+              className="font-medium text-foreground hover:underline underline-offset-4"
+            >
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
