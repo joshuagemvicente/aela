@@ -11,7 +11,7 @@ export async function GET() {
       data: stats,
     });
   } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.APP_ENV !== 'production') {
       console.error('Error fetching waitlist stats:', error);
     }
     return NextResponse.json(

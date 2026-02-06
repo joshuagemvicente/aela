@@ -1,19 +1,26 @@
-"use server"
+"use server";
 
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { loginSchema, registerSchema, oauthSchema, type LoginInput, type RegisterInput, type OAuthInput } from "@/lib/validations/auth"
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import {
+  loginSchema,
+  registerSchema,
+  oauthSchema,
+  type LoginInput,
+  type RegisterInput,
+  type OAuthInput,
+} from "@/lib/validations/auth";
 
 export type AuthResult = {
   user: {
-    id: string
-    name: string
-    email: string
-    image?: string
-  }
-}
+    id: string;
+    name: string;
+    email: string;
+    image?: string;
+  };
+};
 
 /**
  * Server action for email/password login
@@ -23,31 +30,29 @@ export async function signInWithEmail(formData: FormData): Promise<AuthResult> {
   const rawData = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
-  }
+  };
 
   // Validate input
-  const validatedData = loginSchema.safeParse(rawData)
+  const validatedData = loginSchema.safeParse(rawData);
   if (!validatedData.success) {
-    const fieldErrors = validatedData.error.flatten().fieldErrors
-    const firstError = Object.values(fieldErrors)[0]?.[0]
-    throw new Error(firstError || "Invalid input data")
+    const fieldErrors = validatedData.error.flatten().fieldErrors;
+    const firstError = Object.values(fieldErrors)[0]?.[0];
+    throw new Error(firstError || "Invalid input data");
   }
 
-  const { email, password } = validatedData.data
+  const { email, password } = validatedData.data;
 
   // Attempt to sign in
   const result = await auth.api.signInEmail({
     body: {
       email,
-      password, 
+      password,
     },
-  })
+  });
 
   if (!result.user) {
-    throw new Error("Invalid credentials")
+    throw new Error("Invalid credentials");
   }
-
- 
 
   return {
     user: {
@@ -56,7 +61,7 @@ export async function signInWithEmail(formData: FormData): Promise<AuthResult> {
       email: result.user.email,
       image: result.user.image || undefined,
     },
-  }
+  };
 }
 
 /**
@@ -69,17 +74,17 @@ export async function signUpWithEmail(formData: FormData): Promise<AuthResult> {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     confirmPassword: formData.get("confirmPassword") as string,
-  }
+  };
 
   // Validate input
-  const validatedData = registerSchema.safeParse(rawData)
+  const validatedData = registerSchema.safeParse(rawData);
   if (!validatedData.success) {
-    const fieldErrors = validatedData.error.flatten().fieldErrors
-    const firstError = Object.values(fieldErrors)[0]?.[0]
-    throw new Error(firstError || "Invalid input data")
+    const fieldErrors = validatedData.error.flatten().fieldErrors;
+    const firstError = Object.values(fieldErrors)[0]?.[0];
+    throw new Error(firstError || "Invalid input data");
   }
 
-  const { name, email, password } = validatedData.data
+  const { name, email, password } = validatedData.data;
 
   // Attempt to sign up
   const result = await auth.api.signUpEmail({
@@ -88,43 +93,49 @@ export async function signUpWithEmail(formData: FormData): Promise<AuthResult> {
       email,
       password,
     },
-  })
+  });
 
   if (!result.user) {
-    throw new Error("Failed to create account")
+    throw new Error("Failed to create account");
   }
-
 
   return {
     user: {
-        id: result.user.id,
-        name: result.user.name,
-        email: result.user.email,
-        image: result.user.image || undefined,
+      id: result.user.id,
+      name: result.user.name,
+      email: result.user.email,
+      image: result.user.image || undefined,
     },
-  }
+  };
 }
 
 /**
  * Server action for OAuth login (Google/GitHub)
  */
-export async function signInWithOAuth(provider: "google" | "github", callbackURL = "/dashboard"): Promise<void> {
+export async function signInWithOAuth(
+  provider: "google" | "github",
+  callbackURL = "/dashboard",
+): Promise<void> {
   // Validate input
-  const validatedData = oauthSchema.safeParse({ provider, callbackURL })
+  const validatedData = oauthSchema.safeParse({ provider, callbackURL });
   if (!validatedData.success) {
-    throw new Error("Invalid provider")
+    throw new Error("Invalid provider");
   }
 
   // In production, if the provider is not configured, fail fast with a generic message
-  const googleConfigured = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
-  const githubConfigured = Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET)
+  const googleConfigured = Boolean(
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
+  );
+  const githubConfigured = Boolean(
+    process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET,
+  );
 
   if (provider === "google" && !googleConfigured) {
-    throw new Error("Google sign-in is not available right now")
+    throw new Error("Google sign-in is not available right now");
   }
 
   if (provider === "github" && !githubConfigured) {
-    throw new Error("GitHub sign-in is not available right now")
+    throw new Error("GitHub sign-in is not available right now");
   }
 
   // Redirect to OAuth provider
@@ -133,11 +144,11 @@ export async function signInWithOAuth(provider: "google" | "github", callbackURL
       provider: validatedData.data.provider,
       callbackURL: validatedData.data.callbackURL,
     },
-  })
+  });
 
   // For OAuth, we redirect to the provider's URL
   if (result.url) {
-    redirect(result.url)
+    redirect(result.url);
   }
 }
 
@@ -147,7 +158,7 @@ export async function signInWithOAuth(provider: "google" | "github", callbackURL
 export async function signOut(): Promise<void> {
   await auth.api.signOut({
     headers: await headers(),
-  })
+  });
 }
 
 /**
@@ -156,10 +167,10 @@ export async function signOut(): Promise<void> {
 export async function getCurrentSession(): Promise<AuthResult> {
   const session = await auth.api.getSession({
     headers: await headers(),
-  })
+  });
 
   if (!session) {
-    throw new Error("No active session")
+    throw new Error("No active session");
   }
 
   return {
@@ -169,7 +180,7 @@ export async function getCurrentSession(): Promise<AuthResult> {
       email: session.user.email,
       image: session.user.image || undefined,
     },
-  }
+  };
 }
 
 /**
@@ -178,10 +189,10 @@ export async function getCurrentSession(): Promise<AuthResult> {
 export async function requireAuth(): Promise<AuthResult> {
   const session = await auth.api.getSession({
     headers: await headers(),
-  })
+  });
 
   if (!session) {
-    redirect("/login")
+    redirect("/login");
   }
 
   return {
@@ -191,7 +202,7 @@ export async function requireAuth(): Promise<AuthResult> {
       email: session.user.email,
       image: session.user.image || undefined,
     },
-  }
+  };
 }
 
 /**
@@ -200,10 +211,10 @@ export async function requireAuth(): Promise<AuthResult> {
 export async function getCurrentUserProfile(): Promise<AuthResult> {
   const session = await auth.api.getSession({
     headers: await headers(),
-  })
+  });
 
   if (!session) {
-    throw new Error("No active session")
+    throw new Error("No active session");
   }
 
   return {
@@ -213,5 +224,5 @@ export async function getCurrentUserProfile(): Promise<AuthResult> {
       email: session.user.email,
       image: session.user.image || undefined,
     },
-  }
+  };
 }

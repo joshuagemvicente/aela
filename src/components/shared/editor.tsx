@@ -57,7 +57,7 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
         setHasUnsavedChanges(false);
       } catch (error) {
         setSaveStatus("error");
-        if (process.env.NODE_ENV !== "production") {
+        if (process.env.APP_ENV !== "production") {
           console.error("Auto-save failed:", error);
         }
       } finally {
@@ -82,7 +82,7 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
       const currentTitle = titleRef.current;
       debouncedAutoSave(content, currentTitle);
     } catch (error) {
-      if (process.env.NODE_ENV !== "production") {
+      if (process.env.APP_ENV !== "production") {
         console.error("Failed to get editor content:", error);
       }
     }
@@ -102,7 +102,7 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
           debouncedAutoSave(content, newTitle);
         })
         .catch((error) => {
-          if (process.env.NODE_ENV !== "production") {
+          if (process.env.APP_ENV !== "production") {
             console.error("Failed to save title change:", error);
           }
         });
@@ -120,7 +120,7 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
             autoSave(content, currentTitle);
           })
           .catch((error) => {
-            if (process.env.NODE_ENV !== "production") {
+            if (process.env.APP_ENV !== "production") {
               console.error("Periodic save failed:", error);
             }
           });
@@ -231,10 +231,10 @@ export default function Editor({ note, onNoteChange, onNewNote }: EditorProps) {
         try {
           editorRef.current.destroy();
         } catch (error) {
-          if (process.env.NODE_ENV !== "production") {
+          if (process.env.APP_ENV !== "production") {
             console.error("Error destroying editor:", error);
           }
-          if (process.env.NODE_ENV !== "production") {
+          if (process.env.APP_ENV !== "production") {
             console.error("Error destroying editor:", error);
           }
         }

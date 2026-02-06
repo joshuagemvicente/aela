@@ -4,7 +4,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { NextRequest } from "next/server";
 
-const isDev = process.env.NODE_ENV !== "production";
+const isDev = process.env.APP_ENV !== "production";
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -28,6 +28,7 @@ export const auth = betterAuth({
           enabled: true,
           clientId: googleClientId as string,
           clientSecret: googleClientSecret as string,
+          redirectURI: isDev ? process.env.NEXT_DEVELOPMENT_URL as string : process.env.NEXT_PRODUCTION_URL as string,
         }
       : {
           enabled: false,
@@ -40,6 +41,7 @@ export const auth = betterAuth({
           enabled: true,
           clientId: githubClientId as string,
           clientSecret: githubClientSecret as string,
+          redirectURI: isDev ? process.env.NEXT_DEVELOPMENT_URL as string : process.env.NEXT_PRODUCTION_URL as string,
         }
       : {
           enabled: false,

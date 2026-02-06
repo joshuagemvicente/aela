@@ -93,7 +93,6 @@ export async function getUserNotes(): Promise<Note[]> {
   return notes as Note[];
 }
 
-
 /**
  * Get a specific note by ID
  */
@@ -256,4 +255,3 @@ export async function duplicateNote(noteId: string): Promise<Note> {
     throw new Error("Note not found");
   }
 }
-
