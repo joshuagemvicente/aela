@@ -1,15 +1,16 @@
-import { Button } from "@/components/ui/button";
-import { Plus, FileText, Sparkles } from "lucide-react";
-import { createBlankNote, getUserNotes } from "@/lib/actions/notes";
+import { FileText, Plus, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { createBlankNote, getUserNotes } from "@/lib/actions/notes";
+
+async function handleCreateNote() {
+  "use server";
+  const newNote = await createBlankNote();
+  redirect(`/dashboard/${newNote.slug}`);
+}
 
 export default async function DashboardPage() {
   const notes = await getUserNotes();
-  const handleCreateNote = async () => {
-    "use server";
-    const newNote = await createBlankNote();
-    redirect(`/dashboard/${newNote.slug}`);
-  };
 
   return (
     <div className="flex items-center justify-center h-full bg-background">
@@ -67,4 +68,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-
